@@ -5,8 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 public class TokensController {
     private final UniqueIdService uniqueIdService;
@@ -18,7 +16,7 @@ public class TokensController {
 
     @GetMapping("/get-unique-id")
     public ResponseEntity<String> getUniqueId() {
-        String token = uniqueIdService.getNextTokens();
+        String token = uniqueIdService.getNextToken();
         return ResponseEntity.ok().body(token);
     }
 }

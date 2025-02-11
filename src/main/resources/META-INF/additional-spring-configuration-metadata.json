@@ -4,5 +4,21 @@
       "name": "postgres.unique_tokens.count",
       "type": "java.lang.String",
       "description": "Description for postgres.unique_tokens.count."
-  }
-] }
+    },
+    {
+      "name": "jedis.set.name",
+      "type": "java.lang.String",
+      "description": "Description for jedis.set.name."
+    },
+    {
+      "name": "jedis.set.minimum-number-of-elements",
+      "type": "java.lang.Integer",
+      "description": "Description for jedis.set.minimumNumberOfElements."
+    },
+
+    {
+      "name": "jedis.set.amount-of-ids-to-load",
+      "type": "java.lang.Integer",
+      "description": "Description for jedis.set.amount-of-ids-to-load."
+    }
+  ] }

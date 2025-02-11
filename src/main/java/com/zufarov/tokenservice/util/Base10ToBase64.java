@@ -1,6 +1,5 @@
 package com.zufarov.tokenservice.util;
 
-import org.springframework.context.annotation.Bean;
 
 public class Base10ToBase64 {
     private static final String BASE64ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";

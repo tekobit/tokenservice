@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface UniqueTokenRepository extends JpaRepository<UniqueToken, Long> {
 
-
-    @Query(value = "SELECT NEXTVAL('unique_tokens') FROM generate_series(1,1)", nativeQuery = true)
-    List<Long> getNextSequenceValue();
+    String str = "SELECT NEXTVAL('unique_tokens') FROM generate_series(1, :ids)";
+    @Query(value = str, nativeQuery = true)
+    List<Long> getNextSequenceValue(int ids);
 }

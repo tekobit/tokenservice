@@ -1,31 +1,75 @@
 package com.zufarov.tokenservice.services;
 
-import com.zufarov.tokenservice.repositories.UniqueTokenRepository;
-import com.zufarov.tokenservice.util.Base10ToBase64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPubSub;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Base64.Encoder;
-import java.util.List;
+
+import java.util.concurrent.Executor;
 
 @Service
 public class UniqueIdService {
-    private final UniqueTokenRepository uniqueTokenRepository;
+    @Value("${jedis.set.name}")
+    private String redisSetName;
+
+    @Value("${spring.data.redis.host}")
+    private String host;
+
+    @Value("${spring.data.redis.port}")
+    private int port;
+
+    @Value("${jedis.set.minimum-number-of-elements}")
+    private int minimumNumberOfIdsInCache;
+
+    private final JedisService jedisService;
+
+    private final ThreadPoolTaskExecutor asyncTaskExecutor ;
+
     @Autowired
-    public UniqueIdService(UniqueTokenRepository uniqueTokenRepository) {
-        this.uniqueTokenRepository = uniqueTokenRepository;
+    public UniqueIdService( JedisService jedisService, Executor asyncTaskExecutor) {
+        this.jedisService = jedisService;
+        this.asyncTaskExecutor = (ThreadPoolTaskExecutor) asyncTaskExecutor;
     }
 
-    public String getNextTokens() {
-        List<Long> tokens = uniqueTokenRepository.getNextSequenceValue();
-        List<String> ids = new ArrayList<>(List.of());
-        for (long i: tokens) {
-            ids.add(Base10ToBase64.toBase64(i));
+    public String getNextToken() {  
+
+// some shitty code here to get rid of situation when there is 0 id
+// I guess this situation won't ever happen(
+        try (JedisPool jedisPool = new JedisPool(host, port)){
+            Jedis jedis =jedisPool.getResource();
+
+            long numberOfIds = jedis.scard(redisSetName);
+
+            if (numberOfIds==minimumNumberOfIdsInCache) {
+                jedisService.loadIdsInRedis(jedis);
+            }
+            else if (asyncTaskExecutor.getActiveCount()!=0 && numberOfIds==0) {
+                waitUntilIdsInCache();
+            } else if (numberOfIds==0){
+                jedisService.loadIdsInRedis(jedis);
+                waitUntilIdsInCache();
+            }
+            return jedis.spop(redisSetName);
+
         }
-        return ids.getFirst();
+
+    }
+
+    private void waitUntilIdsInCache() {
+        try (JedisPool jedisPool = new JedisPool(host, port)) {
+            Jedis jedis = jedisPool.getResource();
+            jedis.subscribe(new JedisPubSub() {
+                @Override
+                public void onMessage(String channel, String message) {
+                    unsubscribe();
+                }
+            }, "channel1");
+        }
     }
 
 }
+

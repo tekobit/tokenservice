@@ -2,24 +2,21 @@ package com.zufarov.tokenservice.models;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class UniqueToken {
-    public UniqueToken() {
-    }
+
 
     @Id
     private long id;
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
 
     @Override
     public boolean equals(Object o) {
